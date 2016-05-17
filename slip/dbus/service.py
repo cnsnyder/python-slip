@@ -153,7 +153,22 @@ def wrap_method(method):
                 reply_handler=reply_handler, error_handler=error_handler)
         else:
             # no action id, or run locally, no need to do anything fancy
-            retval = method(self, *p, **k)
+            error = None
+            try:
+                retval = method(self, *p, **k)
+            except Exception as e:
+                error = e
+            if error:
+                if error_cb:
+                    error_cb(error)
+                else:
+                    pass
+                    # Could do some logging or something useful here
+            elif reply_cb:
+                if retval:
+                    reply_cb(retval)
+                else:
+                    reply_cb()
             self.timeout_restart()
             return retval
 
